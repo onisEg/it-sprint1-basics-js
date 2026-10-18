@@ -3,17 +3,17 @@ const getCharacter = () => {
   return {
     _id: '9RKDLS02580GHCXNZLA0',
     password: 'isolemnlysweariamuptonogood',
-    name: {first: 'Ron', last: 'Weasly'},
+    name: { first: 'Ron', last: 'Weasly' },
     classes: [
-      {name: 'Divination', teacher: 'Sybill Trelawney'},
-      {name: 'Defence Against the Dark Arts', teacher: 'Dolores Umbridge'},
+      { name: 'Divination', teacher: 'Sybill Trelawney' },
+      { name: 'Defence Against the Dark Arts', teacher: 'Dolores Umbridge' },
     ],
     greet(greeting = 'Hi') {
-      const {first, last} = this.name
+      const { first, last } = this.name
       return `${greeting}! My name is ${first} ${last} and my ID is ${this._id} and my password is ${this.password}!`
     },
     getTeachers() {
-      return this.classes.map(({teacher}) => teacher)
+      return this.classes.map(({ teacher }) => teacher)
     },
   }
 }
@@ -21,7 +21,7 @@ const getCharacter = () => {
 test('22_proxies-1: can wrap an existing object', () => {
   const character = getCharacter()
   // Canvia la línia de sota per crear un `Proxy` que embolcalli l’objecte `character` utilitzant un handler buit (`{}`) i fes que el test passi.
-  const proxy = character
+  const proxy = new Proxy(character, {})
   // Comprova que el proxy no és igual referencialment però sí igual profundament a l'objecte original
   expect(proxy).not.toBe(character) // referencialment diferent
   expect(proxy).toEqual(character) // profundament igual
@@ -30,7 +30,40 @@ test('22_proxies-1: can wrap an existing object', () => {
 test('22_proxies-2: handler can intercept gets, sets, and deletes', () => {
   const character = getCharacter()
 
-  const handler = {}
+  const handler = {
+    get(target, property) {
+      if (property === '_id') {
+        return target._id
+      }
+
+      if (typeof property === 'string' && property.includes('.')) {
+        return property.split('.').reduce((obj, key) => obj[key], target)
+      }
+
+      return target[property]
+    },
+
+    set(target, property, value) {
+      if (typeof property === 'string' && property.includes('.')) {
+        const keys = property.split('.')
+        const lastKey = keys.pop()
+        const obj = keys.reduce((current, key) => current[key], target)
+        obj[lastKey] = value
+      } else {
+        target[property] = value
+      }
+
+      return true
+    },
+
+    deleteProperty(target, property) {
+      if (property === '_id') {
+        return true
+      }
+
+      return delete target[property]
+    },
+  }
   const proxy = new Proxy(character, handler)
 
   // Interactua amb el proxy
