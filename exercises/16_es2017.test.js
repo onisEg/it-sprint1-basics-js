@@ -21,6 +21,7 @@ test('16_es2016-2: array.includes can be used to determine whether an item exist
   expect(result).toBe(true)
 })
 
+
 test('16_es2017-1: String.prototype.padStart saves us from left-pad-gate', () => {
   const originalString = 'Worlds Finest'
   // crida a padStart en aquesta cadena per fer que el test passi
@@ -121,7 +122,7 @@ test('16_es2017-5: Trailing commas in function parameter lists and calls help us
     function bar(
       a,
       b,
-      ...rest,
+      ...rest
     ) {
       log(a, b, ...rest)
     }
